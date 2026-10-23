@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#DFF4FF">
+<title>تحدي الببغاء</title>
+<style>
+:root{
+  --green:#2EAD4F;--green-d:#177A35;--yellow:#FFC107;--orange:#FB8C00;--orange-d:#8A4B00;
+  --red:#E53935;--red-d:#B71C1C;--blue:#1E88E5;--ink:#1F2D3D;--muted:#5d6d7e;
+  --card-w:min(360px,90vw);--card-h:clamp(250px,38vh,330px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{
+  font-family:'Segoe UI',Tahoma,system-ui,sans-serif;color:var(--ink);
+  min-height:100vh;min-height:100dvh;
+  padding:env(safe-area-inset-top) 12px calc(env(safe-area-inset-bottom) + 18px);
+  display:flex;flex-direction:column;align-items:center;overflow-x:hidden;
+  -webkit-user-select:none;user-select:none;touch-action:manipulation;
+  background-color:#FFF8E1;
+  background-image:
+    radial-gradient(circle at 92% 6%,rgba(229,57,53,.18) 0 70px,transparent 71px),
+    radial-gradient(circle at 6% 24%,rgba(255,193,7,.28) 0 90px,transparent 91px),
+    radial-gradient(circle at 96% 80%,rgba(46,173,79,.20) 0 100px,transparent 101px),
+    radial-gradient(circle at 4% 94%,rgba(30,136,229,.18) 0 80px,transparent 81px),
+    linear-gradient(180deg,#DFF4FF 0%,#FFF8E1 55%,#FFEFB5 100%);
+  background-attachment:fixed;
+}
+input{-webkit-user-select:text;user-select:text}
+.app{width:100%;max-width:460px;display:flex;flex-direction:column;gap:10px}
+
+/* الرأس */
+.top{display:flex;align-items:center;justify-content:space-between;padding-top:10px}
+.brand{display:flex;align-items:center;gap:8px}
+.logo{font-size:2rem;display:inline-block;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-5px) rotate(5deg)}}
+h1{margin:0;font-size:1.5rem;font-weight:900;background:linear-gradient(90deg,var(--red),var(--orange),var(--green),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tools{display:flex;gap:8px}
+.icon{width:42px;height:42px;border-radius:50%;border:0;background:#fff;font-size:1.2rem;box-shadow:0 3px 10px rgba(31,45,61,.15);cursor:pointer}
+.icon:active{transform:scale(.92)}
+
+/* لوحة الفرق */
+.board{display:flex;gap:8px}
+.team{flex:1;min-width:0;background:#fff;border-radius:16px;padding:8px 8px 6px;text-align:center;
+  border-top:5px solid var(--tc);box-shadow:0 3px 10px rgba(31,45,61,.12);transition:transform .25s,background .25s,color .25s}
+.team.on{background:var(--tc);color:#fff;transform:translateY(-2px) scale(1.04)}
+.tn{display:block;font-size:.78rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ts{display:block;font-size:1.7rem;font-weight:900;line-height:1.2}
+.turn{text-align:center;font-weight:800;font-size:.95rem;min-height:1.6em}
+.turn b{padding:1px 10px;border-radius:999px;color:#fff;background:var(--tc)}
+
+/* المستويات */
+.tabs{display:flex;gap:6px;padding:6px;background:rgba(255,255,255,.78);border-radius:22px;box-shadow:0 4px 14px rgba(31,45,61,.10)}
+.tab{position:relative;flex:1;border:0;background:transparent;font:inherit;color:var(--muted);cursor:pointer;
+  padding:8px 4px;border-radius:16px;display:flex;flex-direction:column;align-items:center;gap:1px;transition:background .25s,color .25s}
+.tab .tl{font-weight:900;font-size:1rem}
+.tab .tm{font-size:.7rem;font-weight:700;opacity:.85}
+.tab .n{position:absolute;top:-7px;inset-inline-start:-2px;min-width:24px;height:24px;border-radius:12px;padding:0 6px;
+  background:#fff;color:var(--ink);font-size:.75rem;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.tab.active{color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.2)}
+.tab[data-l="easy"].active{background:var(--green)}
+.tab[data-l="medium"].active{background:var(--orange)}
+.tab[data-l="hard"].active{background:var(--red)}
+.tab:disabled{opacity:.4}
+.tabs.locked{pointer-events:none;opacity:.7}
+
+/* البطاقات */
+.stack{position:relative;width:var(--card-w);height:var(--card-h);margin:6px auto 22px}
+.stack.easy{--gc:#1E9E48}.stack.medium{--gc:#E07B00}.stack.hard{--gc:#C62828}
+.ghost{position:absolute;inset:0;border-radius:22px;background:var(--gc);box-shadow:0 8px 16px rgba(31,45,61,.18);opacity:.85}
+.g1{transform:translateY(9px) scale(.97) rotate(-1.2deg)}
+.g2{transform:translateY(17px) scale(.94) rotate(1.4deg);opacity:.6}
+.slot{position:absolute;inset:0;perspective:1200px}
+.slot.pop{animation:pop .45s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes pop{from{opacity:0;transform:translateY(26px) scale(.95)}to{opacity:1;transform:none}}
+.card{position:absolute;inset:0;cursor:pointer;border-radius:22px;outline:none;
+  transform:rotate(var(--r,0deg));transform-style:preserve-3d;
+  transition:transform .6s cubic-bezier(.23,1,.32,1),opacity .4s;box-shadow:0 12px 22px rgba(31,45,61,.22)}
+.card:focus-visible{box-shadow:0 0 0 4px var(--blue),0 12px 22px rgba(31,45,61,.22)}
+.card-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .6s}
+.card.flipped .card-inner{transform:rotateY(180deg)}
+.card.flipped{cursor:default}
+.card.removed{transform:translateY(-130%) rotate(18deg);opacity:0;pointer-events:none}
+.face{position:absolute;inset:0;border-radius:22px;overflow:hidden;-webkit-backface-visibility:hidden;backface-visibility:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px;text-align:center}
+
+.cover{color:#fff}
+.easy .cover{background:linear-gradient(135deg,#4BCB6B,#1E9E48)}
+.medium .cover{background:linear-gradient(135deg,#FFD54F,#FB8C00);color:#3a2600}
+.hard .cover{background:linear-gradient(135deg,#FF7A6B,#D32F2F)}
+.cover::before,.cover::after{content:'';position:absolute;border-radius:50%;background:rgba(255,255,255,.16)}
+.cover::before{width:170px;height:170px;bottom:-70px;left:-50px}
+.cover::after{width:100px;height:100px;top:-34px;right:24px}
+.pbig{font-size:4.2rem;line-height:1;animation:bob 2.4s ease-in-out infinite;position:relative;z-index:1}
+.cv-t{position:relative;z-index:1;margin-top:10px;font-size:1.25rem;font-weight:900}
+.cv-s{position:relative;z-index:1;margin-top:4px;font-size:.9rem;font-weight:700;opacity:.9}
+
+.qface{background:#fff;transform:rotateY(180deg);border:5px solid var(--lc);justify-content:space-between;padding:12px 14px 12px}
+.easy .qface{--lc:var(--green)}.medium .qface{--lc:var(--orange)}.hard .qface{--lc:var(--red)}
+.qtop{width:100%;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.cat,.pts{font-size:.72rem;font-weight:800;padding:3px 10px;border-radius:999px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat{background:#f0f3f6;color:var(--muted);min-width:0}
+.pts{background:var(--lc);color:#fff;flex:none}
+.qbody{flex:1;display:flex;align-items:center;justify-content:center;width:100%}
+.q{font-size:clamp(1.15rem,5.2vw,1.5rem);font-weight:800;line-height:1.7}
+.q .num{display:inline-block;min-width:1.7em;padding:0 .2em;margin:0 .1em;border-radius:12px;background:var(--lc);color:#fff;font-weight:900}
+.qtime{width:100%;display:flex;align-items:center;gap:10px}
+.pause{flex:none;width:38px;height:38px;border-radius:50%;border:0;background:#f0f3f6;font-size:1rem;cursor:pointer}
+.bar{flex:1;height:14px;border-radius:99px;background:#e9eef2;overflow:hidden}
+.bar i{display:block;height:100%;width:100%;border-radius:99px;transform-origin:right center;transform:scaleX(var(--p,1));background:var(--tc,var(--green));transition:transform .1s linear,background .3s}
+.secs{flex:none;min-width:2.3ch;text-align:center;font-size:1.7rem;font-weight:900;color:var(--tc,var(--green))}
+.card.timeup .qface{background:#FFF1F0;animation:shake .5s}
+@keyframes shake{0%,100%{transform:rotateY(180deg) translateX(0)}25%{transform:rotateY(180deg) translateX(-8px)}75%{transform:rotateY(180deg) translateX(8px)}}
+
+.empty{position:absolute;inset:0;border-radius:22px;background:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;text-align:center;
+  font-weight:900;font-size:1.2rem;line-height:1.8;padding:20px;border:3px dashed var(--muted)}
+
+/* أسفل البطاقة */
+.ctrl{display:flex;flex-direction:column;align-items:center;gap:10px;min-height:96px}
+.hint{margin:0;text-align:center;font-size:.9rem;color:var(--muted);padding:0 12px}
+.jt{font-weight:800;text-align:center}
+.jt b{color:var(--blue)}
+.jrow{display:flex;gap:6px;justify-content:center;width:100%}
+.jb{flex:1 1 0;min-width:0;max-width:74px;padding:8px 2px 6px;border-radius:16px;border:0;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0;
+  box-shadow:0 4px 10px rgba(31,45,61,.2);transition:transform .1s}
+.jb:active{transform:scale(.93)}
+.jb .jn{font-size:1.6rem;font-weight:900;line-height:1.15}
+.jb .jp{font-size:.72rem;font-weight:800;direction:ltr;unicode-bidi:isolate}
+.jb.ok{background:var(--green);color:#fff}
+.jb.zero{background:#fff;color:var(--red);border:2px solid var(--red)}
+.jb.wide{max-width:none;flex:1 1 0;min-width:140px;flex-direction:row;justify-content:center;gap:8px;padding:12px 14px;font-weight:900;font-size:1.05rem}
+.link{border:0;background:#fff;color:var(--blue);font:inherit;font-weight:800;border-radius:999px;padding:8px 18px;cursor:pointer;box-shadow:0 3px 8px rgba(31,45,61,.12)}
+
+.toast{direction:ltr;position:fixed;left:50%;top:20%;transform:translateX(-50%);padding:12px 26px;border-radius:999px;background:var(--ink);color:#fff;font-weight:900;font-size:1.4rem;opacity:0;pointer-events:none;z-index:50}
+.toast.show{animation:toast 1.5s ease forwards}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,20px) scale(.8)}15%{opacity:1;transform:translate(-50%,0) scale(1.05)}80%{opacity:1;transform:translate(-50%,-6px)}100%{opacity:0;transform:translate(-50%,-24px)}}
+
+/* النوافذ */
+.overlay{position:fixed;inset:0;background:rgba(31,45,61,.55);display:flex;align-items:center;justify-content:center;z-index:100;padding:14px}
+.panel{background:#fff;border-radius:24px;width:100%;max-width:420px;max-height:90vh;max-height:90dvh;overflow:auto;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.panel h2{margin:0 0 12px;font-size:1.3rem;font-weight:900}
+.panel h3{margin:16px 0 8px;font-size:.95rem;font-weight:800;color:var(--muted)}
+.trow{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.dot{flex:none;width:14px;height:14px;border-radius:50%}
+.trow input{flex:1;min-width:0;font:inherit;font-weight:700;padding:9px 12px;border:2px solid #e3e8ed;border-radius:12px;outline:none}
+.trow input:focus{border-color:var(--blue)}
+.sm{flex:none;width:34px;height:34px;border-radius:10px;border:0;background:#f0f3f6;font:inherit;font-weight:900;font-size:1.1rem;cursor:pointer}
+.sc{flex:none;min-width:2.2ch;text-align:center;font-weight:900}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.pill{flex:1;border:2px solid var(--blue);background:#fff;color:var(--blue);font:inherit;font-weight:800;border-radius:999px;padding:9px 12px;cursor:pointer}
+.pill.on{background:var(--blue);color:#fff}
+.pill.danger{border-color:var(--red);color:var(--red)}
+.pill.danger.on{background:var(--red);color:#fff}
+.pill.main{background:var(--green);border-color:var(--green);color:#fff;font-size:1.05rem}
+.note{margin:6px 2px 0;font-size:.8rem;color:var(--muted);line-height:1.6}
+.rank{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:#f6f8fa;margin-bottom:8px;font-weight:800}
+.rank .rn{font-size:1.4rem}.rank .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rank .pt{font-size:1.3rem;font-weight:900}
+.win{text-align:center;font-size:1.2rem;font-weight:900;margin:4px 0 14px}
+.spacer{height:12px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="logo">🦜</span><h1>تحدي الببغاء</h1></div>
+    <div class="tools">
+      <button class="icon" id="btn-sound" aria-label="الصوت">🔊</button>
+      <button class="icon" id="btn-settings" aria-label="الإعدادات">⚙️</button>
+    </div>
+  </header>
+  <section class="board" id="board"></section>
+  <div class="turn" id="turn"></div>
+  <nav class="tabs" id="tabs"></nav>
+  <main>
+    <div class="stack" id="stack">
+      <div class="ghost g2"></div><div class="ghost g1"></div>
+      <div class="slot" id="slot"></div>
+    </div>
+  </main>
+  <section class="ctrl" id="ctrl"></section>
+</div>
+<div class="toast" id="toast"></div>
+<div class="overlay" id="overlay" hidden><div class="panel" id="panel"></div></div>
+
+<script>
+(() => {
+'use strict';
+
+/* الأسئلة: [التصنيف، نص السؤال، عدد الإجابات المطلوبة] */
+const DATA = {"easy":[["البلدان والجغرافيا","اذكر 5 دول إفريقية.",5],["البلدان والجغرافيا","اذكر 5 دول آسيوية.",5],["البلدان والجغرافيا","اذكر 5 عواصم أوروبية.",5],["البلدان والجغرافيا","اذكر 5 دول عربية.",5],["البلدان والجغرافيا","اذكر 3 دول تقع في أمريكا الجنوبية.",3],["البلدان والجغرافيا","اذكر 5 دول تطل على البحر الأبيض المتوسط.",5],["البلدان والجغرافيا","اذكر 3 دول تقع في شبه الجزيرة العربية.",3],["البلدان والجغرافيا","اذكر 5 أنهار مشهورة في العالم.",5],["البلدان والجغرافيا","اذكر 3 محيطات في العالم.",3],["البلدان والجغرافيا","اذكر 5 معالم سياحية مشهورة حول العالم.",5],["الحيوانات والطبيعة","اذكر 5 حيوانات تعيش في الغابة.",5],["الحيوانات والطبيعة","اذكر 5 حيوانات تعيش في الصحراء.",5],["الحيوانات والطبيعة","اذكر 5 حيوانات مفترسة.",5],["الحيوانات والطبيعة","اذكر 3 أنواع من الدببة.",3],["الحيوانات والطبيعة","اذكر 5 حيوانات أليفة.",5],["الحيوانات والطبيعة","اذكر 5 طيور تستطيع الطيران.",5],["الحيوانات والطبيعة","اذكر 5 حيوانات بحرية.",5],["الحيوانات والطبيعة","اذكر 5 أنواع من الأشجار.",5],["الحيوانات والطبيعة","اذكر 3 حيوانات تعيش في القطب الشمالي.",3],["الحيوانات والطبيعة","اذكر 5 فواكه استوائية.",5],["العلوم وجسم الإنسان","اذكر 5 كواكب في المجموعة الشمسية.",5],["العلوم وجسم الإنسان","اذكر 5 أعضاء في جسم الإنسان.",5],["العلوم وجسم الإنسان","اذكر 5 عظام في جسم الإنسان.",5],["العلوم وجسم الإنسان","اذكر 5 حواس أو قدرات حسية لدى الإنسان.",5],["العلوم وجسم الإنسان","اذكر 3 مصادر للطاقة المتجددة.",3],["العلوم وجسم الإنسان","اذكر 5 عناصر كيميائية معروفة.",5],["العلوم وجسم الإنسان","اذكر 3 حالات للمادة.",3],["العلوم وجسم الإنسان","اذكر 5 ظواهر جوية.",5],["العلوم وجسم الإنسان","اذكر 3 أنواع من الصخور.",3],["العلوم وجسم الإنسان","اذكر 5 وحدات قياس معروفة.",5],["التاريخ والحضارات","اذكر 3 حضارات قديمة.",3],["التاريخ والحضارات","اذكر 5 فراعنة من مصر القديمة.",5],["التاريخ والحضارات","اذكر 3 إمبراطوريات تاريخية مشهورة.",3],["التاريخ والحضارات","اذكر 5 شخصيات تاريخية معروفة.",5],["التاريخ والحضارات","اذكر 3 ثورات مشهورة في التاريخ.",3],["التاريخ والحضارات","اذكر 5 معالم أثرية قديمة.",5],["التاريخ والحضارات","اذكر 3 دول كانت ضمن الإمبراطورية العثمانية.",3],["التاريخ والحضارات","اذكر 5 أحداث مهمة من القرن العشرين.",5],["التاريخ والحضارات","اذكر 3 شخصيات ارتبطت بالحرب العالمية الثانية.",3],["التاريخ والحضارات","اذكر 5 حضارات اشتهرت ببناء المعابد والقصور.",5],["الرياضة","اذكر 5 لاعبين فازوا بالكرة الذهبية.",5],["الرياضة","اذكر 5 أندية أوروبية مشهورة.",5],["الرياضة","اذكر 3 منتخبات فازت بكأس العالم لكرة القدم للرجال.",3],["الرياضة","اذكر 5 رياضات أولمبية.",5],["الرياضة","اذكر 3 ملاكمين مشهورين.",3],["الرياضة","اذكر 5 لاعبين مشهورين في كرة السلة.",5],["الرياضة","اذكر 5 رياضات قتالية.",5],["الرياضة","اذكر 5 ملاعب كرة قدم مشهورة.",5],["الرياضة","اذكر 3 رياضات مائية.",3],["الرياضة","اذكر 5 دول استضافت الألعاب الأولمبية الصيفية.",5],["الأفلام والأنمي","اذكر 5 أفلام هوليوودية مشهورة.",5],["الأفلام والأنمي","اذكر 3 أفلام فازت بجائزة الأوسكار لأفضل فيلم.",3],["الأفلام والأنمي","اذكر 5 أفلام رسوم متحركة مشهورة.",5],["الأفلام والأنمي","اذكر 3 سلاسل أفلام شهيرة.",3],["الأفلام والأنمي","اذكر 5 أنميات يابانية معروفة.",5],["الأفلام والأنمي","اذكر 5 شخصيات من أنمي «ناروتو».",5],["الأفلام والأنمي","اذكر 3 شخصيات من «دراغون بول».",3],["الأفلام والأنمي","اذكر 5 ممثلين عالميين مشهورين.",5],["الأفلام والأنمي","اذكر 3 أفلام تتناول الفضاء.",3],["الأفلام والأنمي","اذكر 5 شخصيات شريرة مشهورة في السينما.",5],["الطعام والثقافات","اذكر 5 أطباق إيطالية.",5],["الطعام والثقافات","اذكر 3 أطباق جزائرية تقليدية.",3],["الطعام والثقافات","اذكر 5 أطباق يابانية.",5],["الطعام والثقافات","اذكر 3 أنواع من الجبن الفرنسي.",3],["الطعام والثقافات","اذكر 5 أنواع من الخبز.",5],["الطعام والثقافات","اذكر 3 أطباق مكسيكية.",3],["الطعام والثقافات","اذكر 5 أنواع من المعكرونة.",5],["الطعام والثقافات","اذكر 3 أنواع من القهوة.",3],["الطعام والثقافات","اذكر 5 توابل مشهورة.",5],["الطعام والثقافات","اذكر 3 أطباق مغربية.",3],["الموسيقى والأدب والفنون","اذكر 5 آلات موسيقية.",5],["الموسيقى والأدب والفنون","اذكر 3 مغنين عالميين مشهورين.",3],["الموسيقى والأدب والفنون","اذكر 5 لوحات فنية مشهورة.",5],["الموسيقى والأدب والفنون","اذكر 3 روايات عالمية مشهورة.",3],["الموسيقى والأدب والفنون","اذكر 5 كتّاب مشهورين.",5],["الموسيقى والأدب والفنون","اذكر 3 شعراء عرب.",3],["الموسيقى والأدب والفنون","اذكر 5 أنواع من الخط العربي.",5],["الموسيقى والأدب والفنون","اذكر 3 أنواع من الرقص التقليدي.",3],["الموسيقى والأدب والفنون","اذكر 5 متاحف عالمية مشهورة.",5],["الموسيقى والأدب والفنون","اذكر 3 مؤلفين موسيقيين مشهورين.",3],["التكنولوجيا والحياة اليومية","اذكر 5 شركات تقنية عالمية.",5],["التكنولوجيا والحياة اليومية","اذكر 3 أنظمة تشغيل للحواسيب أو الهواتف.",3],["التكنولوجيا والحياة اليومية","اذكر 5 منصات تواصل اجتماعي.",5],["التكنولوجيا والحياة اليومية","اذكر 3 محركات بحث على الإنترنت.",3],["التكنولوجيا والحياة اليومية","اذكر 5 أجهزة إلكترونية منزلية.",5],["التكنولوجيا والحياة اليومية","اذكر 3 لغات برمجة.",3],["التكنولوجيا والحياة اليومية","اذكر 5 وسائل نقل.",5],["التكنولوجيا والحياة اليومية","اذكر 3 مساعدين أو أدوات ذكاء اصطناعي.",3],["التكنولوجيا والحياة اليومية","اذكر 5 عملات عالمية.",5],["التكنولوجيا والحياة اليومية","اذكر 3 شركات تصنع السيارات.",3],["معلومات متنوعة","اذكر 5 مهن طبية.",5],["معلومات متنوعة","اذكر 3 منظمات دولية مشهورة.",3],["معلومات متنوعة","اذكر 5 اختراعات غيّرت حياة البشر.",5],["معلومات متنوعة","اذكر 3 جوائز عالمية مشهورة.",3],["معلومات متنوعة","اذكر 5 رياضات فردية.",5],["معلومات متنوعة","اذكر 3 ألعاب لوحية معروفة.",3],["معلومات متنوعة","اذكر 5 دول تشتهر بإنتاج النفط.",5],["معلومات متنوعة","اذكر 3 أدوات يستخدمها الطهاة.",3],["معلومات متنوعة","اذكر 5 لغات يتحدث بها ملايين الناس.",5],["معلومات متنوعة","اذكر 3 شخصيات مشهورة في استكشاف الفضاء.",3]],"medium":[["البلدان والجغرافيا","اذكر 5 دول عواصمها ليست أكبر مدنها.",5],["البلدان والجغرافيا","اذكر 3 دول لا تملك منفذًا بحريًا.",3],["البلدان والجغرافيا","اذكر 5 دول يمر بها خط الاستواء.",5],["البلدان والجغرافيا","اذكر 3 دول تقع أراضيها في قارتي أوروبا وآسيا.",3],["البلدان والجغرافيا","اذكر 5 مدن مشهورة بقنواتها المائية.",5],["البلدان والجغرافيا","اذكر 3 مضائق بحرية مشهورة.",3],["البلدان والجغرافيا","اذكر 5 دول تشتهر بإنتاج القهوة.",5],["البلدان والجغرافيا","اذكر 3 مدن تقع على نهر الدانوب.",3],["البلدان والجغرافيا","اذكر 5 دول تشتهر بصناعة الساعات.",5],["البلدان والجغرافيا","اذكر 3 دول تقع في جبال الأنديز أو تمتد أراضيها فيها.",3],["التاريخ والحضارات","اذكر 5 شخصيات بارزة من الحضارة الرومانية.",5],["التاريخ والحضارات","اذكر 3 شخصيات مشهورة من تاريخ قرطاج.",3],["التاريخ والحضارات","اذكر 5 طرق تجارية تاريخية مشهورة.",5],["التاريخ والحضارات","اذكر 3 معارك ارتبطت بحملات الإسكندر الأكبر.",3],["التاريخ والحضارات","اذكر 5 شخصيات من عصر النهضة الأوروبية.",5],["التاريخ والحضارات","اذكر 3 معاهدات أنهت حروبًا كبرى.",3],["التاريخ والحضارات","اذكر 5 قادة ارتبطوا بعصر نابليون.",5],["التاريخ والحضارات","اذكر 3 شخصيات تاريخية اشتهرت بالإصلاحات القانونية.",3],["التاريخ والحضارات","اذكر 5 حضارات قديمة اشتهرت بالملاحة البحرية.",5],["التاريخ والحضارات","اذكر 3 شخصيات ارتبطت باستقلال دول إفريقية.",3],["الحيوانات والطبيعة","اذكر 5 حيوانات تستطيع تحديد الموقع بالصدى.",5],["الحيوانات والطبيعة","اذكر 3 حيوانات تستطيع تجديد أجزاء من أجسامها.",3],["الحيوانات والطبيعة","اذكر 5 حشرات تعيش في مستعمرات.",5],["الحيوانات والطبيعة","اذكر 3 حيوانات تعيش في القارة القطبية الجنوبية أو مياهها المحيطة.",3],["الحيوانات والطبيعة","اذكر 5 أنواع من الأسماك المفترسة.",5],["الحيوانات والطبيعة","اذكر 3 حيوانات تهاجر لمسافات طويلة.",3],["الحيوانات والطبيعة","اذكر 5 حيوانات تنشط ليلًا.",5],["الحيوانات والطبيعة","اذكر 3 حيوانات تستخدم السم للصيد أو الدفاع.",3],["الحيوانات والطبيعة","اذكر 5 نباتات آكلة للحشرات.",5],["الحيوانات والطبيعة","اذكر 3 أنواع معروفة من الفطريات الصالحة للأكل.",3],["العلوم والحياة اليومية","اذكر 5 فيتامينات أو معادن يحتاج إليها الجسم.",5],["العلوم والحياة اليومية","اذكر 3 أنواع من خلايا الدم.",3],["العلوم والحياة اليومية","اذكر 5 تخصصات طبية.",5],["العلوم والحياة اليومية","اذكر 3 فحوصات طبية تعتمد على التصوير.",3],["العلوم والحياة اليومية","اذكر 5 أطعمة غنية بالحديد.",5],["العلوم والحياة اليومية","اذكر 3 طرق شائعة لقياس اللياقة البدنية.",3],["العلوم والحياة اليومية","اذكر 5 عوامل تساعد على التعافي بعد التمرين.",5],["العلوم والحياة اليومية","اذكر 3 أنواع من الإصابات الرياضية.",3],["العلوم والحياة اليومية","اذكر 5 مواد تُستخدم عوازل كهربائية.",5],["العلوم والحياة اليومية","اذكر 3 طرق لفصل المواد المختلطة، مثل الترشيح.",3],["الفيزياء والكيمياء المبسطة","اذكر 5 وحدات قياس تُستخدم في الحياة اليومية.",5],["الفيزياء والكيمياء المبسطة","اذكر 3 أحماض معروفة في الحياة اليومية.",3],["الفيزياء والكيمياء المبسطة","اذكر 5 تفاعلات كيميائية تحدث في المنزل أو الطبيعة.",5],["الفيزياء والكيمياء المبسطة","اذكر 3 قوانين فيزيائية مشهورة.",3],["الفيزياء والكيمياء المبسطة","اذكر 5 معادن تُستخدم في صناعة الأجهزة الإلكترونية.",5],["الفيزياء والكيمياء المبسطة","اذكر 3 وحدات لقياس الطاقة أو القدرة.",3],["الفيزياء والكيمياء المبسطة","اذكر 5 ظواهر مرتبطة بالكهرباء والمغناطيسية.",5],["الفيزياء والكيمياء المبسطة","اذكر 3 عوامل تؤثر في سرعة تبخر الماء.",3],["الفيزياء والكيمياء المبسطة","اذكر 5 أحجار كريمة غير الماس والياقوت.",5],["الفيزياء والكيمياء المبسطة","اذكر 3 طرق يستخدمها العلماء لمعرفة عمر الصخور أو الآثار.",3],["الفضاء","اذكر 5 مهمات فضائية مشهورة.",5],["الفضاء","اذكر 3 مجرات غير مجرة درب التبانة.",3],["الفضاء","اذكر 5 تلسكوبات أو مراصد فلكية مشهورة.",5],["الفضاء","اذكر 3 أقمار طبيعية لكواكب غير الأرض.",3],["الفضاء","اذكر 5 كوكبات نجمية معروفة.",5],["الفضاء","اذكر 3 مركبات جوالة استكشفت المريخ.",3],["الفضاء","اذكر 5 استخدامات للأقمار الصناعية.",5],["الفضاء","اذكر 3 أنواع من المجرات بحسب شكلها.",3],["الفضاء","اذكر 5 ظواهر تنتج عن تفاعل الأرض مع الشمس.",5],["الفضاء","اذكر 3 صعوبات تواجه الرحلات البشرية إلى المريخ.",3],["الرياضة","اذكر 5 لاعبين مشهورين في تاريخ التنس.",5],["الرياضة","اذكر 3 سباقات دراجات مشهورة.",3],["الرياضة","اذكر 5 رياضيين مشهورين في فنون القتال المختلطة.",5],["الرياضة","اذكر 3 بطولات دولية في كرة السلة.",3],["الرياضة","اذكر 5 رياضات شتوية.",5],["الرياضة","اذكر 3 رياضات تستخدم القوس والسهم أو أدوات الرمي.",3],["الرياضة","اذكر 5 لاعبين فازوا بدوري أبطال أوروبا مع ناديين مختلفين.",5],["الرياضة","اذكر 3 مسابقات في رياضة الجمباز.",3],["الرياضة","اذكر 5 رياضات تحتاج إلى قدرة عالية على التحمل.",5],["الرياضة","اذكر 3 أنواع من سباقات السيارات.",3],["السينما والأدب","اذكر 5 أفلام تتناول السفر عبر الزمن.",5],["السينما والأدب","اذكر 3 أفلام أخرجها ستيفن سبيلبرغ.",3],["السينما والأدب","اذكر 5 أنميات تتناول الحروب أو السياسة.",5],["السينما والأدب","اذكر 3 ممثلين أدّوا دور جيمس بوند.",3],["السينما والأدب","اذكر 5 كتّاب اشتهروا بأدب الخيال العلمي.",5],["السينما والأدب","اذكر 3 أعمال أدبية لويليام شكسبير.",3],["السينما والأدب","اذكر 5 مدارس أو اتجاهات فنية مشهورة.",5],["السينما والأدب","اذكر 3 مؤلفات فلسفية معروفة.",3],["السينما والأدب","اذكر 5 لغات مشتقة من اللاتينية.",5],["السينما والأدب","اذكر 3 جوائز أدبية عالمية.",3],["الطعام والتكنولوجيا والاقتصاد","اذكر 5 أطباق كورية تقليدية.",5],["الطعام والتكنولوجيا والاقتصاد","اذكر 3 أطباق تايلاندية شهيرة.",3],["الطعام والتكنولوجيا والاقتصاد","اذكر 5 صلصات معروفة في المطابخ العالمية.",5],["الطعام والتكنولوجيا والاقتصاد","اذكر 3 طرق تقليدية لحفظ الطعام.",3],["الطعام والتكنولوجيا والاقتصاد","اذكر 5 أنظمة تشغيل للحواسيب والهواتف.",5],["الطعام والتكنولوجيا والاقتصاد","اذكر 3 شركات تصنع معالجات الحواسيب.",3],["الطعام والتكنولوجيا والاقتصاد","اذكر 5 أنواع من الروبوتات بحسب وظيفتها.",5],["الطعام والتكنولوجيا والاقتصاد","اذكر 3 وسائل شائعة لتخزين البيانات الرقمية.",3],["الطعام والتكنولوجيا والاقتصاد","اذكر 5 موارد طبيعية تدخل في الصناعات.",5],["الطعام والتكنولوجيا والاقتصاد","اذكر 3 أنواع من الأسواق المالية.",3],["ثقافة عامة متنوعة","اذكر 5 مواقع أثرية شهيرة في آسيا.",5],["ثقافة عامة متنوعة","اذكر 3 منظمات إنسانية دولية.",3],["ثقافة عامة متنوعة","اذكر 5 متاحف فنية مشهورة خارج فرنسا.",5],["ثقافة عامة متنوعة","اذكر 3 مشاريع هندسية ضخمة تسهّل النقل.",3],["ثقافة عامة متنوعة","اذكر 5 شخصيات ساهمت في تطور الاتصالات.",5],["ثقافة عامة متنوعة","اذكر 3 شركات تصنع الطائرات التجارية.",3],["ثقافة عامة متنوعة","اذكر 5 مهرجانات سينمائية دولية.",5],["ثقافة عامة متنوعة","اذكر 3 لغات تستخدم أنظمة كتابة مختلفة عن اللاتينية والعربية.",3],["ثقافة عامة متنوعة","اذكر 5 اختراعات ساهمت في تطور الاتصالات.",5],["ثقافة عامة متنوعة","اذكر 3 علماء ساهموا في فهم الكهرباء والمغناطيسية.",3]],"hard":[["الجغرافيا والمعالم","اذكر 5 دول عواصمها تقع على ارتفاعات كبيرة.",5],["الجغرافيا والمعالم","اذكر 3 دول تضم أجزاء من صحراء غوبي.",3],["الجغرافيا والمعالم","اذكر 5 بحيرات تقع على الحدود بين دولتين أو أكثر.",5],["الجغرافيا والمعالم","اذكر 3 دول تحيط بها دولة واحدة من جميع الجهات البرية.",3],["الجغرافيا والمعالم","اذكر 5 مدن كانت عواصم لإمبراطوريات تاريخية.",5],["الجغرافيا والمعالم","اذكر 3 أنهار تعبر عدة دول قبل وصولها إلى البحر.",3],["الجغرافيا والمعالم","اذكر 5 دول تقع أراضيها ضمن حوض نهر الأمازون.",5],["الجغرافيا والمعالم","اذكر 3 عواصم تقع قرب الدائرة القطبية الشمالية.",3],["الجغرافيا والمعالم","اذكر 5 مضائق بحرية لها أهمية كبيرة للتجارة العالمية.",5],["الجغرافيا والمعالم","اذكر 3 دول لديها أقاليم بعيدة عن أراضيها الرئيسية.",3],["التاريخ والحروب","اذكر 5 معارك مشهورة في التاريخ القديم.",5],["التاريخ والحروب","اذكر 3 قادة عسكريين من قرطاج.",3],["التاريخ والحروب","اذكر 5 قادة تاريخيين اشتهروا بالمناورات العسكرية.",5],["التاريخ والحروب","اذكر 3 معارك مهمة بين الإمبراطوريتين البيزنطية والفارسية.",3],["التاريخ والحروب","اذكر 5 إمبراطوريات تاريخية انهارت.",5],["التاريخ والحروب","اذكر 3 معارك ارتبطت بالتوسع المغولي.",3],["التاريخ والحروب","اذكر 5 شخصيات تاريخية اشتهرت بالتخطيط العسكري.",5],["التاريخ والحروب","اذكر 3 حروب ارتبطت بالسيطرة على طرق التجارة البحرية.",3],["التاريخ والحروب","اذكر 5 معاهدات تاريخية أثرت في حدود الدول.",5],["التاريخ والحروب","اذكر 3 حملات عسكرية مشهورة انتهت بالفشل.",3],["الحضارات والآثار","اذكر 5 مواقع أثرية مرتبطة بحضارة المايا.",5],["الحضارات والآثار","اذكر 3 ممالك قديمة في منطقة النوبة.",3],["الحضارات والآثار","اذكر 5 أنظمة كتابة استخدمتها الحضارات القديمة.",5],["الحضارات والآثار","اذكر 3 مدن ازدهرت على طريق الحرير.",3],["الحضارات والآثار","اذكر 5 مبانٍ دينية تاريخية من حضارات مختلفة.",5],["الحضارات والآثار","اذكر 3 حضارات استخدمت الكتابة المسمارية.",3],["الحضارات والآثار","اذكر 5 علماء أو مهندسين مشهورين من الحضارة الإسلامية.",5],["الحضارات والآثار","اذكر 3 مراكز علمية مشهورة في العالم القديم أو الوسيط.",3],["الحضارات والآثار","اذكر 5 آثار رومانية تقع خارج إيطاليا.",5],["الحضارات والآثار","اذكر 3 حضارات قديمة عرفت أنظمة ري متقدمة.",3],["الحيوانات والطبيعة","اذكر 5 حيوانات تتواصل بأصوات مميزة ومعقدة.",5],["الحيوانات والطبيعة","اذكر 3 أسماك تعيش في أعماق البحار.",3],["الحيوانات والطبيعة","اذكر 5 كائنات حية تستطيع العيش في ظروف بيئية قاسية.",5],["الحيوانات والطبيعة","اذكر 3 حيوانات تستخدم التمويه لتجنب المفترسات أو اصطياد الفرائس.",3],["الحيوانات والطبيعة","اذكر 5 طفيليات معروفة تصيب الإنسان أو الحيوانات.",5],["الحيوانات والطبيعة","اذكر 3 حيوانات تستطيع التكاثر دون إخصاب في بعض الظروف.",3],["الحيوانات والطبيعة","اذكر 5 نباتات تستطيع العيش في البيئات المالحة.",5],["الحيوانات والطبيعة","اذكر 3 أمثلة على التكافل بين أنواع مختلفة من الكائنات الحية.",3],["الحيوانات والطبيعة","اذكر 5 حيوانات تعيش في مجموعات ذات تنظيم اجتماعي واضح.",5],["الحيوانات والطبيعة","اذكر 3 كائنات بحرية تنتج الضوء بنفسها.",3],["جسم الإنسان والعلوم","اذكر 5 هرمونات بشرية معروفة.",5],["جسم الإنسان والعلوم","اذكر 3 أنواع من الخلايا المناعية.",3],["جسم الإنسان والعلوم","اذكر 5 أمراض وراثية معروفة.",5],["جسم الإنسان والعلوم","اذكر 3 تقنيات تُستخدم في دراسة الحمض النووي.",3],["جسم الإنسان والعلوم","اذكر 5 نواقل عصبية معروفة.",5],["جسم الإنسان والعلوم","اذكر 3 فحوصات شائعة لتقييم صحة القلب.",3],["جسم الإنسان والعلوم","اذكر 5 بكتيريا نافعة أو استخدامات للبكتيريا النافعة.",5],["جسم الإنسان والعلوم","اذكر 3 طرق تستخدمها الخلايا لإنتاج الطاقة.",3],["جسم الإنسان والعلوم","اذكر 5 أعضاء أو أجزاء رئيسية في الجهاز العصبي.",5],["جسم الإنسان والعلوم","اذكر 3 تقنيات حديثة لتعديل الجينات.",3],["الفضاء","اذكر 5 أقمار طبيعية يُعتقد أن محيطات تحت سطحها قد توجد، أو توجد أدلة قوية على وجودها.",5],["الفضاء","اذكر 3 أنواع من النجوم المتراصة.",3],["الفضاء","اذكر 5 مهمات فضائية استكشفت الكواكب الخارجية أو أطراف المجموعة الشمسية.",5],["الفضاء","اذكر 3 طرق يستخدمها العلماء لاكتشاف الكواكب خارج المجموعة الشمسية.",3],["الفضاء","اذكر 5 مراصد فلكية أرضية مشهورة.",5],["الفضاء","اذكر 3 أفكار أو نماذج علمية تشرح نشأة الكون أو تطوره.",3],["الفضاء","اذكر 5 أقمار صناعية تُستخدم لرصد الأرض أو المناخ.",5],["الفضاء","اذكر 3 ظواهر مرتبطة بالثقوب السوداء.",3],["الفضاء","اذكر 5 مجسات فضائية وصلت إلى أجرام سماوية غير الأرض.",5],["الفضاء","اذكر 3 تحديات لبناء قاعدة بشرية على القمر.",3],["الرياضة والألعاب","اذكر 5 أبطال شطرنج عالميين.",5],["الرياضة والألعاب","اذكر 3 افتتاحيات مشهورة في الشطرنج.",3],["الرياضة والألعاب","اذكر 5 ملاكمين فازوا بألقاب عالمية في أكثر من وزن.",5],["الرياضة والألعاب","اذكر 3 سباقات تحمّل شهيرة في رياضة السيارات.",3],["الرياضة والألعاب","اذكر 5 رياضيين حطموا أرقامًا قياسية عالمية في ألعاب القوى.",5],["الرياضة والألعاب","اذكر 3 خطط تكتيكية مشهورة في كرة القدم.",3],["الرياضة والألعاب","اذكر 5 دول حققت نجاحات بارزة في رياضة المبارزة.",5],["الرياضة والألعاب","اذكر 3 مسابقات دولية مشهورة في رياضة الرجبي.",3],["الرياضة والألعاب","اذكر 5 لاعبين فازوا بالكرة الذهبية في سنوات مختلفة من تاريخ الجائزة.",5],["الرياضة والألعاب","اذكر 3 رياضات أُضيفت إلى الألعاب الأولمبية الصيفية في القرن الحادي والعشرين.",3],["السينما والأدب والفنون","اذكر 5 كتّاب مشهورين من المدرسة الواقعية.",5],["السينما والأدب والفنون","اذكر 3 روايات مشهورة تتناول المجتمعات المستقبلية القمعية أو الديستوبيا.",3],["السينما والأدب والفنون","اذكر 5 مخرجين ارتبطت أسماؤهم بالموجة الفرنسية الجديدة.",5],["السينما والأدب والفنون","اذكر 3 مدارس فنية ظهرت قبل القرن العشرين.",3],["السينما والأدب والفنون","اذكر 5 مؤلفين موسيقيين من العصر الباروكي.",5],["السينما والأدب والفنون","اذكر 3 روايات فلسفية مشهورة.",3],["السينما والأدب والفنون","اذكر 5 أفلام فازت بالسعفة الذهبية في مهرجان كان.",5],["السينما والأدب والفنون","اذكر 3 شعراء من الأندلس.",3],["السينما والأدب والفنون","اذكر 5 تقنيات تصوير سينمائي معروفة.",5],["السينما والأدب والفنون","اذكر 3 فنانين اشتهروا بالفن السريالي.",3],["التكنولوجيا والاقتصاد","اذكر 5 بروتوكولات تُستخدم في شبكات الحاسوب.",5],["التكنولوجيا والاقتصاد","اذكر 3 خوارزميات تشفير مشهورة.",3],["التكنولوجيا والاقتصاد","اذكر 5 تقنيات تُستخدم في صناعة أشباه الموصلات.",5],["التكنولوجيا والاقتصاد","اذكر 3 أفكار أو نماذج اقتصادية تفسر التضخم أو النمو الاقتصادي.",3],["التكنولوجيا والاقتصاد","اذكر 5 مؤسسات دولية تعمل في المجال المالي.",5],["التكنولوجيا والاقتصاد","اذكر 3 تقنيات لتخزين الطاقة على نطاق واسع.",3],["التكنولوجيا والاقتصاد","اذكر 5 أنواع من المحركات المستخدمة في الطيران أو الفضاء.",5],["التكنولوجيا والاقتصاد","اذكر 3 أنظمة ملاحة عبر الأقمار الصناعية.",3],["التكنولوجيا والاقتصاد","اذكر 5 تقنيات تُستخدم في الروبوتات الصناعية.",5],["التكنولوجيا والاقتصاد","اذكر 3 مشاريع هندسية كبرى لإنتاج الطاقة.",3],["ثقافة عامة متقدمة","اذكر 5 شخصيات تاريخية اشتهرت برحلات الاستكشاف البحري.",5],["ثقافة عامة متقدمة","اذكر 3 جوائز عالمية تُمنح في مجالات العلوم.",3],["ثقافة عامة متقدمة","اذكر 5 مدن استضافت الألعاب الأولمبية أكثر من مرة.",5],["ثقافة عامة متقدمة","اذكر 3 شخصيات تاريخية ارتبطت بفك رموز الكتابات القديمة.",3],["ثقافة عامة متقدمة","اذكر 5 اختراعات أو ابتكارات ساعدت في الثورة الصناعية.",5],["ثقافة عامة متقدمة","اذكر 3 شخصيات مشهورة في تاريخ علم الفلك.",3],["ثقافة عامة متقدمة","اذكر 5 من أشهر الجسور في العالم.",5],["ثقافة عامة متقدمة","اذكر 3 قنوات مائية اصطناعية ذات أهمية عالمية.",3],["ثقافة عامة متقدمة","اذكر 5 شخصيات معروفة في تاريخ الطيران.",5],["ثقافة عامة متقدمة","اذكر 3 اكتشافات أثرية غيّرت فهمنا لحضارات قديمة.",3]]};
+
+const LV = [
+  {key:'easy',   name:'سهل',   emoji:'🟢', pts:1, sec:20},
+  {key:'medium', name:'متوسط', emoji:'🟡', pts:2, sec:30},
+  {key:'hard',   name:'صعب',   emoji:'🔴', pts:3, sec:45}
+];
+const LVM = Object.fromEntries(LV.map(l => [l.key, l]));
+const TEAM_COLORS = ['#2EAD4F', '#1E88E5', '#FB8C00', '#E53935'];
+const TEAM_NAMES = ['الفريق الأول', 'الفريق الثاني', 'الفريق الثالث', 'الفريق الرابع'];
+const KEY = 'parrot-quiz-v1';
+
+const $ = s => document.querySelector(s);
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  e.append(...kids.filter(x => x != null));
+  return e;
+}
+function shuffle(a) {
+  const r = a.slice();
+  for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; }
+  return r;
+}
+
+/* ===== الحالة والحفظ ===== */
+function newDecks() {
+  const d = {};
+  LV.forEach(l => { d[l.key] = shuffle(DATA[l.key].map((_, i) => i)); });
+  return d;
+}
+function fresh(old) {
+  return {
+    v: 1,
+    teams: old ? old.teams.map(t => ({name: t.name, score: 0})) : [{name: TEAM_NAMES[0], score: 0}, {name: TEAM_NAMES[1], score: 0}],
+    turn: 0, mode: old ? old.mode : 'item', sound: old ? old.sound : true,
+    level: 'easy', decks: newDecks(), hist: [], started: old ? true : false
+  };
+}
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (s && s.v === 1 && Array.isArray(s.teams) && s.teams.length >= 2 && s.decks &&
+        LV.every(l => Array.isArray(s.decks[l.key]) && s.decks[l.key].every(i => DATA[l.key][i]))) return s;
+  } catch (e) {}
+  return null;
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+let S = load() || fresh();
+let phase = 'idle';          // idle | question | leaving
+let cardEl = null;
+let T = null;                // المؤقت
+
+/* ===== العرض ===== */
+const board = $('#board'), turnEl = $('#turn'), tabsEl = $('#tabs'), slot = $('#slot'),
+      stack = $('#stack'), ctrl = $('#ctrl'), overlay = $('#overlay'), panel = $('#panel');
+
+function renderBoard() {
+  board.innerHTML = '';
+  S.teams.forEach((t, i) => {
+    const d = h('div', {class: 'team' + (i === S.turn ? ' on' : '')}, h('span', {class: 'tn'}, t.name), h('span', {class: 'ts'}, String(t.score)));
+    d.style.setProperty('--tc', TEAM_COLORS[i]);
+    board.append(d);
+  });
+}
+function renderTurn() {
+  turnEl.innerHTML = '';
+  const t = S.teams[S.turn];
+  const b = h('b', null, t.name);
+  b.style.setProperty('--tc', TEAM_COLORS[S.turn]);
+  if (phase === 'question') turnEl.append('⏱️ يجيب الآن: ', b);
+  else turnEl.append('دور ', b, ' — اختر مستوى واسحب بطاقة');
+}
+function renderTabs() {
+  tabsEl.innerHTML = '';
+  tabsEl.classList.toggle('locked', phase !== 'idle');
+  LV.forEach(l => {
+    const left = S.decks[l.key].length;
+    const b = h('button', {class: 'tab' + (S.level === l.key ? ' active' : ''), 'data-l': l.key},
+      h('span', {class: 'tl'}, l.emoji + ' ' + l.name),
+      h('span', {class: 'tm'}, l.pts + ' نقطة • ' + l.sec + ' ث'),
+      h('span', {class: 'n'}, String(left)));
+    if (!left) b.disabled = true;
+    b.addEventListener('click', () => {
+      if (phase !== 'idle' || S.level === l.key) return;
+      S.level = l.key; save(); renderTabs(); renderStage(); renderControls();
+    });
+    tabsEl.append(b);
+  });
+}
+function fillQuestion(el, text) {
+  el.textContent = '';
+  const m = text.match(/^(.*?)(\d+)(.*)$/);
+  if (!m) { el.textContent = text; return; }
+  el.append(m[1], h('span', {class: 'num'}, m[2]), m[3]);
+}
+function renderStage() {
+  slot.innerHTML = ''; cardEl = null;
+  const deck = S.decks[S.level];
+  stack.className = 'stack ' + S.level;
+  stack.querySelector('.g1').style.display = deck.length > 1 ? 'block' : 'none';
+  stack.querySelector('.g2').style.display = deck.length > 2 ? 'block' : 'none';
+  if (!deck.length) {
+    slot.append(h('div', {class: 'empty'}, '🎉', h('br'), 'انتهت أسئلة هذا المستوى', h('br'), 'جرّب مستوى آخر'));
+    return;
+  }
+  const L = LVM[S.level];
+  const [cat, text] = DATA[S.level][deck[0]];
+  const card = h('div', {class: 'card ' + S.level, tabindex: '0', role: 'button', 'aria-label': 'اسحب سؤالاً'},
+    h('div', {class: 'card-inner'},
+      h('div', {class: 'face cover'},
+        h('div', {class: 'pbig'}, '🦜'),
+        h('div', {class: 'cv-t'}, 'اضغط لقلب البطاقة'),
+        h('div', {class: 'cv-s'}, L.name + ' • ' + L.pts + ' نقطة • ' + L.sec + ' ثانية')),
+      h('div', {class: 'face qface'},
+        h('div', {class: 'qtop'}, h('span', {class: 'cat'}, cat), h('span', {class: 'pts'}, '⭐ ' + L.pts + (S.mode === 'item' ? ' نقطة لكل إجابة' : ' نقطة'))),
+        h('div', {class: 'qbody'}, h('div', {class: 'q'})),
+        h('div', {class: 'qtime'},
+          h('button', {class: 'pause', 'aria-label': 'إيقاف مؤقت'}, '⏸'),
+          h('div', {class: 'bar'}, h('i')),
+          h('span', {class: 'secs'}, String(L.sec))))));
+  fillQuestion(card.querySelector('.q'), text);
+  card.style.setProperty('--r', ((Math.random() * 2 - 1) * 1.2).toFixed(2) + 'deg');
+  card.addEventListener('click', onCard);
+  card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onCard(e); } });
+  card.querySelector('.pause').addEventListener('click', e => { e.stopPropagation(); togglePause(); });
+  slot.append(card);
+  cardEl = card;
+  slot.classList.remove('pop'); void slot.offsetWidth; slot.classList.add('pop');
+}
+function renderControls() {
+  ctrl.innerHTML = '';
+  if (phase === 'question') {
+    const L = LVM[S.level];
+    const n = DATA[S.level][S.decks[S.level][0]][2];
+    const t = S.teams[S.turn];
+    if (S.mode === 'item' && n > 0) {
+      ctrl.append(h('div', {class: 'jt'}, 'كم إجابة صحيحة ذكرها ', h('b', null, t.name), '؟'));
+      const row = h('div', {class: 'jrow'});
+      for (let k = 0; k <= n; k++) {
+        row.append(h('button', {class: 'jb ' + (k === 0 ? 'zero' : 'ok'), onclick: () => judge(k)},
+          h('span', {class: 'jn'}, String(k)), h('span', {class: 'jp'}, k === 0 ? '✗' : '+' + k * L.pts)));
+      }
+      ctrl.append(row);
+    } else {
+      ctrl.append(h('div', {class: 'jt'}, 'هل أجاب ', h('b', null, t.name), ' إجابة صحيحة؟'));
+      ctrl.append(h('div', {class: 'jrow'},
+        h('button', {class: 'jb ok wide', onclick: () => judge(1)}, '✅ صحيحة', h('span', {class: 'jp'}, '+' + L.pts)),
+        h('button', {class: 'jb zero wide', onclick: () => judge(0)}, '❌ خطأ')));
+    }
+  } else if (phase === 'idle') {
+    if (S.decks[S.level].length) ctrl.append(h('p', {class: 'hint'}, 'اضغط على البطاقة لقلبها — يبدأ المؤقت فوراً ⏱️'));
+    if (S.hist.length) ctrl.append(h('button', {class: 'link', onclick: undo}, '↩ تراجع عن آخر نتيجة'));
+  }
+}
+function renderAll() { renderBoard(); renderTurn(); renderTabs(); renderStage(); renderControls(); updateSoundBtn(); }
+function setPhase(p) { phase = p; renderTurn(); renderTabs(); renderControls(); }
+
+/* ===== اللعب ===== */
+function onCard() {
+  if (phase !== 'idle' || !cardEl) return;
+  unlockAudio();
+  cardEl.classList.add('flipped');
+  setPhase('question');
+  startTimer(LVM[S.level].sec);
+}
+function judge(k) {
+  if (phase !== 'question') return;
+  const L = LVM[S.level];
+  stopTimer();
+  const pts = k * L.pts;
+  const ti = S.turn;
+  S.teams[ti].score += pts;
+  S.hist.push({lv: S.level, idx: S.decks[S.level].shift(), team: ti, pts});
+  if (S.hist.length > 30) S.hist.shift();
+  S.turn = (S.turn + 1) % S.teams.length;
+  save();
+  toast(pts > 0 ? '+' + pts + ' 🎉' : 'بدون نقاط');
+  cardEl.classList.add('removed');
+  phase = 'leaving';
+  renderBoard(); renderTurn(); renderTabs(); renderControls();
+  setTimeout(() => {
+    phase = 'idle';
+    ensureLevel();
+    if (allDone()) { renderAll(); showResults(); return; }
+    renderTabs(); renderStage(); renderControls();
+  }, 480);
+}
+function undo() {
+  if (phase !== 'idle' || !S.hist.length) return;
+  const h0 = S.hist.pop();
+  if (S.teams[h0.team]) { S.teams[h0.team].score -= h0.pts; S.turn = h0.team; }
+  S.decks[h0.lv].unshift(h0.idx);
+  S.level = h0.lv;
+  save(); renderAll();
+}
+function allDone() { return LV.every(l => !S.decks[l.key].length); }
+function ensureLevel() {
+  if (S.decks[S.level].length) return;
+  const l = LV.find(l => S.decks[l.key].length);
+  if (l) S.level = l.key;
+}
+
+/* ===== المؤقت ===== */
+function startTimer(sec) {
+  stopTimer();
+  T = {total: sec * 1000, left: sec * 1000, last: performance.now(), paused: false, done: false};
+  T.id = setInterval(tick, 100);
+  paintTimer();
+}
+function stopTimer() { if (T) clearInterval(T.id); T = null; }
+function tick() {
+  if (!T || T.paused) return;
+  const n = performance.now();
+  T.left -= n - T.last; T.last = n;
+  if (T.left <= 0) { T.left = 0; T.done = true; clearInterval(T.id); timeUp(); }
+  paintTimer();
+}
+function togglePause() {
+  if (!T || T.done) return;
+  T.paused = !T.paused; T.last = performance.now();
+  paintTimer();
+}
+function pauseIfRunning() { if (T && !T.paused && !T.done) { T.paused = true; paintTimer(); } }
+function paintTimer() {
+  if (!T || !cardEl) return;
+  const p = T.left / T.total;
+  const col = T.paused ? '#9aa7b3' : p > 0.5 ? '#2EAD4F' : p > 0.25 ? '#FB8C00' : '#E53935';
+  const q = cardEl.querySelector('.qtime');
+  q.style.setProperty('--tc', col);
+  q.querySelector('.bar i').style.setProperty('--p', p.toFixed(3));
+  q.querySelector('.secs').textContent = T.done ? '⏰' : String(Math.ceil(T.left / 1000));
+  q.querySelector('.pause').textContent = T.paused ? '▶' : '⏸';
+  if (T.done) cardEl.classList.add('timeup');
+}
+function timeUp() {
+  beep();
+  try { if (navigator.vibrate) navigator.vibrate([250, 120, 250]); } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) pauseIfRunning(); });
+
+/* ===== الصوت ===== */
+let AC = null;
+function unlockAudio() {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+  } catch (e) {}
+}
+function beep() {
+  if (!S.sound || !AC) return;
+  try {
+    [0, 0.28, 0.56].forEach(d => {
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.type = 'sine'; o.frequency.value = 880;
+      g.gain.setValueAtTime(0.0001, AC.currentTime + d);
+      g.gain.exponentialRampToValueAtTime(0.4, AC.currentTime + d + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + d + 0.2);
+      o.connect(g); g.connect(AC.destination);
+      o.start(AC.currentTime + d); o.stop(AC.currentTime + d + 0.22);
+    });
+  } catch (e) {}
+}
+function updateSoundBtn() { $('#btn-sound').textContent = S.sound ? '🔊' : '🔇'; }
+$('#btn-sound').addEventListener('click', () => { S.sound = !S.sound; save(); updateSoundBtn(); });
+
+let toastTimer = null;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg; t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1600);
+}
+
+/* ===== النوافذ ===== */
+function openModal() { overlay.hidden = false; }
+function closeModal() {
+  overlay.hidden = true; panel.innerHTML = '';
+  if (!S.started) S.started = true;
+  save();
+}
+overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+
+function openSettings(first) {
+  pauseIfRunning();
+  panel.innerHTML = '';
+  panel.append(h('h2', null, first ? 'جهّز الفرق 🦜' : 'الإعدادات'));
+
+  const list = h('div');
+  const drawTeams = () => {
+    list.innerHTML = '';
+    S.teams.forEach((t, i) => {
+      const dot = h('span', {class: 'dot'}); dot.style.background = TEAM_COLORS[i];
+      const inp = h('input', {type: 'text', maxlength: '16', value: t.name, 'aria-label': 'اسم الفريق'});
+      inp.addEventListener('input', () => { t.name = inp.value.trim() || TEAM_NAMES[i]; save(); renderBoard(); renderTurn(); if (phase === 'question') renderControls(); });
+      const sc = h('span', {class: 'sc'}, String(t.score));
+      const adj = d => () => { t.score += d; sc.textContent = String(t.score); save(); renderBoard(); };
+      list.append(h('div', {class: 'trow'}, dot, inp, h('button', {class: 'sm', onclick: adj(-1), 'aria-label': 'إنقاص نقطة'}, '−'), sc, h('button', {class: 'sm', onclick: adj(1), 'aria-label': 'إضافة نقطة'}, '+')));
+    });
+  };
+  drawTeams();
+  panel.append(list);
+
+  const addBtn = h('button', {class: 'pill', onclick: () => {
+    if (S.teams.length >= 4) return;
+    S.teams.push({name: TEAM_NAMES[S.teams.length], score: 0});
+    save(); drawTeams(); renderBoard(); updateBtns();
+  }}, '＋ فريق');
+  const delBtn = h('button', {class: 'pill', onclick: () => {
+    if (S.teams.length <= 2) return;
+    S.teams.pop(); S.hist = [];
+    if (S.turn >= S.teams.length) S.turn = 0;
+    save(); drawTeams(); renderBoard(); renderTurn(); renderControls(); updateBtns();
+  }}, '－ حذف الأخير');
+  const updateBtns = () => { addBtn.disabled = S.teams.length >= 4; delBtn.disabled = S.teams.length <= 2; addBtn.style.opacity = addBtn.disabled ? .4 : 1; delBtn.style.opacity = delBtn.disabled ? .4 : 1; };
+  panel.append(h('div', {class: 'btns'}, addBtn, delBtn));
+  updateBtns();
+
+  panel.append(h('h3', null, 'طريقة احتساب النقاط'));
+  const segItem = h('button', {class: 'pill' + (S.mode === 'item' ? ' on' : '')}, 'لكل إجابة صحيحة');
+  const segQ = h('button', {class: 'pill' + (S.mode === 'question' ? ' on' : '')}, 'للسؤال كاملاً');
+  const note = h('p', {class: 'note'});
+  const setNote = () => { note.textContent = S.mode === 'item'
+    ? 'مثال: سؤال «اذكر 5 دول» وأجاب الفريق 3 صحيحة في مستوى متوسط = 3 × 2 = 6 نقاط.'
+    : 'يحصل الفريق على نقاط المستوى مرة واحدة فقط إذا كانت إجابته صحيحة.'; };
+  const setMode = m => () => {
+    if (phase !== 'idle') return;
+    S.mode = m; save();
+    segItem.classList.toggle('on', m === 'item'); segQ.classList.toggle('on', m === 'question');
+    setNote(); renderStage(); renderControls();
+  };
+  segItem.addEventListener('click', setMode('item')); segQ.addEventListener('click', setMode('question'));
+  setNote();
+  panel.append(h('div', {class: 'btns'}, segItem, segQ), note);
+
+  panel.append(h('h3', null, 'المؤقت والنقاط'));
+  panel.append(h('p', {class: 'note'}, LV.map(l => l.emoji + ' ' + l.name + ': ' + l.pts + ' نقطة — ' + l.sec + ' ثانية').join('\n')));
+  panel.lastChild.style.whiteSpace = 'pre-line';
+
+  panel.append(h('div', {class: 'spacer'}));
+  const row2 = h('div', {class: 'btns'});
+  row2.append(h('button', {class: 'pill', onclick: () => { closeModal(); showResults(); }}, '🏆 النتائج'));
+  let armed = false, armT = null;
+  const newBtn = h('button', {class: 'pill danger'}, '🔄 لعبة جديدة');
+  newBtn.addEventListener('click', () => {
+    if (!armed) {
+      armed = true; newBtn.classList.add('on'); newBtn.textContent = 'اضغط للتأكيد';
+      armT = setTimeout(() => { armed = false; newBtn.classList.remove('on'); newBtn.textContent = '🔄 لعبة جديدة'; }, 3000);
+    } else {
+      clearTimeout(armT); startNewGame(); closeModal();
+    }
+  });
+  row2.append(newBtn);
+  panel.append(row2);
+  panel.append(h('div', {class: 'spacer'}));
+  panel.append(h('button', {class: 'pill main', style: 'width:100%', onclick: closeModal}, first ? 'ابدأ اللعب 🎮' : 'تم'));
+  openModal();
+}
+function startNewGame() {
+  stopTimer();
+  S = fresh(S);
+  phase = 'idle';
+  save(); renderAll();
+}
+function showResults() {
+  pauseIfRunning();
+  panel.innerHTML = '';
+  const order = S.teams.map((t, i) => ({t, i})).sort((a, b) => b.t.score - a.t.score);
+  const top = order[0].t.score;
+  const winners = order.filter(o => o.t.score === top);
+  panel.append(h('h2', null, '🏆 النتائج'));
+  panel.append(h('div', {class: 'win'}, winners.length > 1 ? '🤝 تعادل!' : '🎉 الفائز: ' + winners[0].t.name));
+  const medals = ['🥇', '🥈', '🥉', '🎖️'];
+  order.forEach((o, r) => {
+    const row = h('div', {class: 'rank'}, h('span', {class: 'rn'}, medals[r]), h('span', {class: 'nm'}, o.t.name), h('span', {class: 'pt'}, String(o.t.score)));
+    row.style.borderInlineStart = '6px solid ' + TEAM_COLORS[o.i];
+    panel.append(row);
+  });
+  panel.append(h('div', {class: 'spacer'}));
+  panel.append(h('div', {class: 'btns'},
+    h('button', {class: 'pill', onclick: closeModal}, 'رجوع'),
+    h('button', {class: 'pill main', onclick: () => { startNewGame(); closeModal(); }}, '🔄 لعبة جديدة')));
+  openModal();
+}
+$('#btn-settings').addEventListener('click', () => openSettings(false));
+
+/* ===== البدء ===== */
+ensureLevel();
+renderAll();
+if (!S.started) openSettings(true);
+})();
+</script>
+</body>
+</html>
